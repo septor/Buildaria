@@ -72,7 +72,7 @@ namespace Buildaria
         Vector2 lastPosition = Vector2.Zero;
         KeyboardState oldKeyState = Keyboard.GetState();
 
-        bool itemHax, godMode, npcsEnabled, hover, buildMode, itemsEnabled, displayMessages, lightMe, saveInventoriesOnSwitch;
+        bool itemHax, godMode, npcsEnabled, hover, buildMode, itemsEnabled, displayMessages, lightMe, saveInventoriesOnSwitch, gridMe;
         string[] displayMessagesMsg, otherToggles, selectionMessages, undoMessage, saveLoadInv, setSpawnPoint, lightMeToggle, mouseCoords, teleportMessages, timeMessage;
         string[] ctlF1, ctlF2, ctlF3, ctlF4, ctlF5, ctlF6, ctlF7, ctlF8, ctlF9, ctlF10, ctlF11, ctlF12;
 
@@ -120,6 +120,7 @@ namespace Buildaria
                     "displayMessages_true",
                     "lightMe_true",
                     "saveInventoriesOnSwitch_false"
+                    "gridMe_false"
                 };
 
                 foreach (string defaults in defaultSettings)
@@ -196,6 +197,7 @@ namespace Buildaria
             displayMessages = true;
             lightMe = true;
             saveInventoriesOnSwitch = false;
+            gridMe = false;
 
             // Chat Output Colors
             displayMessagesMsg = "255,255,255".Split(',');
@@ -231,6 +233,7 @@ namespace Buildaria
                     if (reader.Name == "displayMessages") displayMessages = Convert.ToBoolean(reader.ReadString());
                     if (reader.Name == "lightMe") lightMe = Convert.ToBoolean(reader.ReadString());
                     if (reader.Name == "saveInventoriesOnSwitch") saveInventoriesOnSwitch = Convert.ToBoolean(reader.ReadString());
+                    if (reader.Name == "gridMe") gridMe = Convert.ToBoolean(reader.ReadString());
 
                     #endregion
 
@@ -673,6 +676,25 @@ namespace Buildaria
 
                 #endregion
 
+#region Grid (ruler)
+                
+                if (keyState.IsKeyDown(Keys.R) && oldKeyState.IsKeyUp(Keys.R) && !editSign && !ctrl && !shift)
+                {
+                    
+                    gridMe = !gridMe;
+                    if (displayMessages)
+                    {
+                        Main.NewText("Ruler = " + gridMe, Convert.ToByte(otherToggles[0]), Convert.ToByte(otherToggles[1]), Convert.ToByte(otherToggles[2]));
+                    }
+                }
+                if (gridMe)
+                {
+                    player[myPlayer].rulerAcc = true;
+                }
+                
+
+                #endregion
+                
                 #region God Mode
 
                 if (keyState.IsKeyDown(Keys.G) && oldKeyState.IsKeyUp(Keys.G) && !editSign && !ctrl && !shift)
