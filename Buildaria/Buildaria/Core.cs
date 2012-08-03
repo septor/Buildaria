@@ -327,7 +327,29 @@ namespace Buildaria
             bool ctrl = keyState.IsKeyDown(Keys.LeftControl) || keyState.IsKeyDown(Keys.RightControl);
 
             #endregion
+            
+            bool allowStuff = true; // Disallows most buildaria functionality in-game
+            // Set to true if the user may not want certain functions to be happening
+	   #region Allow Stuff Detection
 
+                    // Detect if mouse is on a hotbar or inventory is open
+                    for (int i = 0; i < 11; i++)
+                    {
+                        int x = (int)(20f + ((i * 0x38) * inventoryScale));
+                        int y = (int)(20f + ((0 * 0x38) * inventoryScale));
+                        int index = x;
+                        if (((mouseState.X >= x) && (mouseState.X <= (x + (inventoryBackTexture.Width * inventoryScale)))) && ((mouseState.Y >= y) && (mouseState.Y <= (y + (inventoryBackTexture.Height * inventoryScale) + 2))))
+                        {
+                            i = 11;
+                            allowStuff = false;
+                            break;
+                        }
+                    }
+                    if (playerInventory || !buildMode || editSign)
+                        allowStuff = false;
+
+         #endregion
+                    
             #region buildMode
 
             if (buildMode)
@@ -485,30 +507,42 @@ namespace Buildaria
 
             #region Bucket Management
 
-            // Disabled for now.
-
-            /*bool[] lavaBuckets = new bool[40];
+	    bool[] lavaBuckets = new bool[40];
             bool[] waterBuckets = new bool[40];
             bool[] emptyBuckets = new bool[40];
             for (int i = 0; i < player[myPlayer].inventory.Length; i++)
             {
-                if (player[myPlayer].inventory[i].type == 0xcf)
+                if (player[myPlayer].inventory[i].type == 0xcf && allowStuff)
                 {
                     lavaBuckets[i] = true;
                 }
-                else if (player[myPlayer].inventory[i].type == 0xce)
+                else if (player[myPlayer].inventory[i].type == 0xce && allowStuff)
                 {
                     waterBuckets[i] = true;
                 }
-                else if (player[myPlayer].inventory[i].type == 0xcd)
+                else if (player[myPlayer].inventory[i].type == 0xcd && allowStuff)
                 {
                     emptyBuckets[i] = true;
                 }
             }
 
+            try
+            {
+                base.Update(gameTime);
+            }
+            catch (Exception e)
+            {
+                Main.NewText(e.Message);
+                LoadInventory(0);
+                base.Update(gameTime);
+            }
+
+            if (gamePaused)
+                return;
+
             for (int i = 0; i < player[myPlayer].inventory.Length; i++)
             {
-                if (player[myPlayer].inventory[i].type == 0xcd)
+                if (player[myPlayer].inventory[i].type == 0xcd && allowStuff)
                 {
                     if (lavaBuckets[i] == true)
                     {
@@ -523,7 +557,9 @@ namespace Buildaria
                         player[myPlayer].inventory[i].type = 0xcd;
                     }
                 }
-            }*/
+            }
+
+            trashItem.SetDefaults(0);
 
             #endregion
 
@@ -1002,30 +1038,10 @@ namespace Buildaria
 
                 #endregion
 
-                bool allowStuff = true; // Disallows most buildaria functionality in-game
-                // Set to true if the user may not want certain functions to be happening
+                
                 try
                 {
-                    #region Allow Stuff Detection
-
-                    // Detect if mouse is on a hotbar or inventory is open
-                    for (int i = 0; i < 11; i++)
-                    {
-                        int x = (int)(20f + ((i * 0x38) * inventoryScale));
-                        int y = (int)(20f + ((0 * 0x38) * inventoryScale));
-                        int index = x;
-                        if (((mouseState.X >= x) && (mouseState.X <= (x + (inventoryBackTexture.Width * inventoryScale)))) && ((mouseState.Y >= y) && (mouseState.Y <= (y + (inventoryBackTexture.Height * inventoryScale) + 2))))
-                        {
-                            i = 11;
-                            allowStuff = false;
-                            break;
-                        }
-                    }
-                    if (playerInventory || !buildMode || editSign)
-                        allowStuff = false;
-
-                    #endregion
-
+                    
                     #region Place Anywhere
 
                     if (mouseState.LeftButton == ButtonState.Pressed && player[myPlayer].inventory[player[myPlayer].selectedItem].createTile >= 0 && allowStuff)
@@ -1040,6 +1056,7 @@ namespace Buildaria
                             Main.tile[x, y].type = (byte)player[myPlayer].inventory[player[myPlayer].selectedItem].createTile;
                             Main.tile[x, y].wall = wall;
                             Main.tile[x, y].active = true;
+                            Main.tile[x, y].liquid = 0;
                             TileFrame(x, y);
                             SquareWallFrame(x, y, true);
                         }
